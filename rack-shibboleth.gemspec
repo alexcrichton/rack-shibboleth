@@ -26,8 +26,11 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'rack'
   s.add_dependency 'rsa'
-  s.add_dependency 'nokogiri'
+  s.add_dependency 'nokogiri', '>= 1.5.0.beta'
 
+  s.add_development_dependency 'guard'
+  s.add_development_dependency 'guard-rspec'
+  s.add_development_dependency 'guard-bundler'
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rack-test'
 end
