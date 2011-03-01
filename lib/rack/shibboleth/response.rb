@@ -1,3 +1,4 @@
+require 'base64'
 require 'digest/sha1'
 require 'nokogiri'
 require 'openssl'
@@ -13,7 +14,7 @@ module Rack
     class Response
 
       # Initializes a new response with the given XML from the IdP
-      # 
+      #
       # @param [String] xml the response from the IdP
       def initialize xml
         @doc = Nokogiri::XML(xml)
@@ -22,7 +23,7 @@ module Rack
       # Tests whether the response from the IdP is a valid response. A call to
       # this function removes the ds:Signature element to perform the
       # verification.
-      # 
+      #
       # @return [Boolean] true if the document is signed/hashed correctly or
       #         false otherwise.
       def valid?
@@ -35,10 +36,10 @@ module Rack
       end
 
       # Decodes the response of the IdP and retuns the decrypted XML
-      # 
+      #
       # @param [OpenSSL::PKey::RSA] private_key the corresponding key to the
       #        public key which was used to encrypt the response.
-      # 
+      #
       # @return [Nokogiri::XML::Document, false] The XML document which was
       #         decrypted, or if decryption failed, false is returned.
       def decode private_key
@@ -54,7 +55,7 @@ module Rack
         # Generate the key used for the cipher below via the RSA::OAEP algo
         rsak      = RSA::Key.new private_key.n, private_key.d
         v1s       = Base64.decode64(c1.text)
-        puts 'here'
+
         begin
           cipherkey = RSA::OAEP.decode rsak, v1s
         rescue
@@ -86,10 +87,10 @@ module Rack
       end
 
       private
-      
+
       # Validates the elements which the given signature has hashes for.
       # Each element must be canonicalized before digestion.
-      # 
+      #
       # @param [Nokogiri::XML::Node] signature the signature of the document
       def valid_hashes? signature
         signature.xpath('.//ds:Reference', 'ds' => DS).all? do |ref|
@@ -108,7 +109,7 @@ module Rack
 
       # Validates that the signature for a given document is valid by verifying
       # it against the public key listed.
-      # 
+      #
       # @param [Nokogiri::XML::Node] signature the signature of the document
       def valid_signature? signature
         # We create a new XML document in Nokogiri to canonicalize the
@@ -145,9 +146,9 @@ module RSA
 
     # Performs the rsa-oaep-mgf1 decrypt algorithm. This is specified on page
     # 14 of http://www.ietf.org/rfc/rfc2437.txt.
-    # 
+    #
     # This implementation assumes that the sha1 hashing algorithm was used.
-    # 
+    #
     # @param [RSA::Key] k the private key whose public key was used to
     #        encrypt the data
     # @param [String] c a string of raw bytes representing the text to be
@@ -175,9 +176,9 @@ module RSA
 
     # Decodes the encrypted message as specified by the algorithm listed on
     # http://www.ietf.org/rfc/rfc2437.txt in page 22
-    # 
+    #
     # @param [String] em the encoded message that needs to be decoded
-    # @param 
+    # @param
     def eme_decode em, p
       raise 'asdf' if em.length < HLEN * 2 + 1
 
@@ -204,7 +205,7 @@ module RSA
 
     # Defined in seciton 10.2.1 of http://www.ietf.org/rfc/rfc2437.txt, this
     # is the mask generation function used in the eme_decode function
-    # 
+    #
     # @param [String] z this is the seed which the mask function runs off of
     # @param [Integer] l the desired length of the resultant hash
     # @return [String] the mask generated
