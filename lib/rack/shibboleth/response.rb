@@ -58,8 +58,7 @@ module Rack
 
         begin
           cipherkey = RSA::OAEP.decode rsak, v1s
-        rescue
-          # TODO: rescue specific errors
+        rescue RSA::OAEP::DecodeError
           return false
         end
 
