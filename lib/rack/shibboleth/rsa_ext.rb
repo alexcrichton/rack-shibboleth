@@ -101,11 +101,14 @@ module RSA
     private
 
     def xor s1, s2
-      if s1.length != s2.length
+      b1 = s1.unpack('c*')
+      b2 = s2.unpack('c*')
+
+      if b1.length != b2.length
         raise DecodeError, 'cannot xor strings of different lengths!'
       end
 
-      s1.bytes.to_a.zip(s2.bytes.to_a).map{ |a, b| a ^ b }.pack('c*')
+      b1.zip(b2).map{ |a, b| a ^ b }.pack('c*')
     end
 
   end
