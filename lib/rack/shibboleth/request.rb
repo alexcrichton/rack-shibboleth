@@ -1,4 +1,5 @@
 require 'base64'
+require 'securerandom'
 require 'digest/md5'
 require 'time'
 require 'zlib'
@@ -80,7 +81,7 @@ module Rack
       #
       # @return [String] a 32 character ID for this request
       def id
-        @id ||= Digest::MD5.hexdigest rand.to_s
+        @id ||= SecureRandom.hex(16)
       end
 
       private
