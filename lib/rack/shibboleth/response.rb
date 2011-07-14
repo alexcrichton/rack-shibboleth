@@ -53,8 +53,8 @@ module Rack
         return false unless cert.check_private_key(private_key)
 
         # Generate the key used for the cipher below via the RSA::OAEP algo
-        rsak      = RSA::Key.new private_key.n, private_key.d
-        v1s       = Base64.decode64(c1.text)
+        rsak = RSA::Key.new private_key.n, private_key.d
+        v1s  = Base64.decode64(c1.text)
 
         begin
           cipherkey = RSA::OAEP.decode rsak, v1s
@@ -64,9 +64,9 @@ module Rack
 
         # The aes-128-cbc cipher has a 128 bit initialization vector (16 bytes)
         # and this is the first 16 bytes of the raw string.
-        bytes  = Base64.decode64(c2.text).bytes.to_a
-        iv     = bytes[0...16].pack('c*')
-        others = bytes[16..-1].pack('c*')
+        bytes  = Base64.decode64(c2.text).unpack('C*')
+        iv     = bytes.pack('c16')
+        others = bytes.pack('c16X16c*')
 
         cipher = OpenSSL::Cipher.new('aes-128-cbc')
         cipher.decrypt
