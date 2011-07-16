@@ -14,6 +14,10 @@ module Rack
     def initialize app, opts = {}
       @app = app
       @opts = opts
+
+      if @opts[:private_key].nil? || !::File.exists?(@opts[:private_key])
+        raise ArgumentError, 'need valid :private_key option'
+      end
       @private_key = OpenSSL::PKey::RSA.new(::File.read(@opts[:private_key]))
     end
 
