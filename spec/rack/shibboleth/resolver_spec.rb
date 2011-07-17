@@ -4,9 +4,14 @@ describe Rack::Shibboleth::Resolver do
 
   context 'parsing a sample response' do
 
+    before do
+      Time.stub(:now).and_return Time.utc(2011, 3, 1, 15, 55)
+    end
+
     let(:response) { Rack::Test.read_fixture 'sample-response' }
     subject{
-      Rack::Shibboleth::Resolver.from_response response, Rack::Test.sample_key
+      Rack::Shibboleth::Resolver.from_response response, Rack::Test.sample_key,
+        {:issuer => 'https://mirror.alexcrichton.com/shibboleth-sp'}
     }
 
     its(:issued) { should be_an_instance_of(Time) }

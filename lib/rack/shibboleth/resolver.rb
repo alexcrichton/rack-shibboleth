@@ -14,14 +14,16 @@ module Rack
       # @return [Rack::Shibboleth::Resolver, false] either the resolver object
       #         for the specified response or false if the response could not
       #         be decode and/or verified
-      def self.from_response resp, private_key
+      def self.from_response resp, private_key, opts
         xml = Rack::Utils.parse_query(resp)
         xml = Base64.decode64 xml['SAMLResponse']
         shib_response = Shibboleth::Response.new xml
 
         assertion = shib_response.decode private_key
-
-        assertion ? Resolver.new(assertion) : assertion
+        if assertion
+          resolver = Resolver.new assertion, opts
+          resolver.valid? ? resolver : nil
+        end
       end
 
       # Creates a new resolver for the specified assertion document which was
@@ -29,8 +31,20 @@ module Rack
       #
       # @param [LibXML::XML::Document] assertion the parsed version of the
       #        xml received from the IdP
-      def initialize assertion
-        @doc = assertion
+      # @param [Hash] opts options specified to {Rack::Shibboleth}
+      def initialize assertion, opts
+        @doc  = assertion
+        @opts = opts
+      end
+
+      # Tests whether this response from the IdP is valid based on the
+      # conditions specified.
+      #
+      # @return [Boolean] true if the resolver has valid attributes.
+      def valid?
+        conds = conditions
+        conds[:after] < Time.now && Time.now < conds[:before] &&
+          conds[:audience] == @opts[:issuer]
       end
 
       # The exact time that the response was issued at
