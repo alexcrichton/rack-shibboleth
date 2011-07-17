@@ -27,7 +27,7 @@ module Rack
       # Creates a new resolver for the specified assertion document which was
       # decoded from a response to the IdP
       #
-      # @param [Nokogiri::XML::Document] assertion the parsed version of the
+      # @param [LibXML::XML::Document] assertion the parsed version of the
       #        xml received from the IdP
       def initialize assertion
         @doc = assertion
@@ -37,14 +37,14 @@ module Rack
       #
       # @return [Time] the time this response was issued at
       def issued
-        Time.parse @doc.xpath('//saml2:Assertion').first['IssueInstant']
+        Time.parse @doc.find_first('//saml2:Assertion')['IssueInstant']
       end
 
       # The entity name of the IdP who issued the response
       #
       # @return [String] the entity name of the Idp
       def issuer
-        @doc.xpath('//saml2:Issuer').text
+        @doc.find_first('//saml2:Issuer').content
       end
 
       # Extracts the conditions under which this response is valid.
@@ -55,12 +55,12 @@ module Rack
       #           :audience - [String] the response is only meant for this
       #                       audience specified by their entity name
       def conditions
-        conditions = @doc.xpath('//saml2:Conditions').first
-        audience = conditions.xpath('.//saml2:Audience').first
+        conditions = @doc.find_first('//saml2:Conditions')
+        audience = conditions.find_first('.//saml2:Audience')
         {
           :after => Time.parse(conditions['NotBefore']),
           :before => Time.parse(conditions['NotOnOrAfter']),
-          :audience => audience.text
+          :audience => audience.content
         }
       end
 
@@ -70,12 +70,12 @@ module Rack
       #         attributes as strings and the value is the value listed as a
       #         string
       def attributes
-        attributes = @doc.xpath('//saml2:Attribute')
+        attributes = @doc.find('//saml2:Attribute')
         hash = {}
 
         attributes.each do |el|
           hash[el['FriendlyName']] =
-            el.xpath('.//saml2:AttributeValue').first.text
+            el.find_first('.//saml2:AttributeValue').content
         end
 
         hash

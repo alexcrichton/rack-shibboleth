@@ -10,7 +10,7 @@ describe Rack::Shibboleth::Response do
   it "decodes correctly without error" do
     decoded = subject.decode Rack::Test.sample_key
 
-    decoded.should be_a(Nokogiri::XML::Document)
+    decoded.should be_a(LibXML::XML::Document)
     decoded.canonicalize.should == Rack::Test.read_fixture('sample-decoded.xml')
   end
 

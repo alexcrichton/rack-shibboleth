@@ -8,8 +8,8 @@ module Rack
     autoload :Response, 'rack/shibboleth/response'
     autoload :VERSION,  'rack/shibboleth/version'
 
-    DS   = 'http://www.w3.org/2000/09/xmldsig#'
-    XENC = 'http://www.w3.org/2001/04/xmlenc#'
+    DS   = 'ds:http://www.w3.org/2000/09/xmldsig#'
+    XENC = 'xenc:http://www.w3.org/2001/04/xmlenc#'
 
     def initialize app, opts = {}
       @app = app

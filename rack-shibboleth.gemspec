@@ -26,7 +26,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'rack'
   s.add_dependency 'rsa'
-  s.add_dependency 'nokogiri', '>= 1.5.0.beta'
+  s.add_dependency 'libxml-ruby'
 
   s.add_development_dependency 'rake'
   s.add_development_dependency 'guard'
