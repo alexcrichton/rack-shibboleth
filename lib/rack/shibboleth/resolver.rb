@@ -7,7 +7,7 @@ module Rack
       # Creates a new Resolver from the IdP's response, using the given private
       # key to decrypt the response.
       #
-      # @param [String] resp the raw response from the IdP
+      # @param [String] resp the 'SAMLResponse' value from the IdP
       # @param [OpenSSL::PKey::RSA] private_key the private key which will be
       #        used to decrypt the response
       #
@@ -15,8 +15,8 @@ module Rack
       #         for the specified response or false if the response could not
       #         be decode and/or verified
       def self.from_response resp, private_key, opts
-        xml = Rack::Utils.parse_query(resp)
-        xml = Base64.decode64 xml['SAMLResponse']
+        return nil if resp.nil?
+        xml = Base64.decode64 resp
         shib_response = Shibboleth::Response.new xml
 
         assertion = shib_response.decode private_key
@@ -43,7 +43,7 @@ module Rack
       # @return [Boolean] true if the resolver has valid attributes.
       def valid?
         conds = conditions
-        conds[:after] < Time.now && Time.now < conds[:before] &&
+        conds[:after] <= Time.now && Time.now <= conds[:before] &&
           conds[:audience] == @opts[:issuer]
       end
 

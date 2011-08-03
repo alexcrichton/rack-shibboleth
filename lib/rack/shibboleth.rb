@@ -43,7 +43,8 @@ module Rack
     end
 
     def call env
-      if env['PATH_INFO'] == '/auth/shibboleth'
+      request = Rack::Request.new env
+      if request.path_info == '/auth/shibboleth'
         query = {
           :SAMLRequest => Shibboleth::Request.new(@opts).encode,
           :RelayState  => @opts[:issuer]
@@ -54,9 +55,9 @@ module Rack
         return Rack::Response.new.tap{ |r|
           r.redirect @opts[:idp_url] + '?' + arr.join('&')
         }.finish
-      elsif env['PATH_INFO'] == '/Shibboleth.sso/SAML2/POST'
+      elsif request.path_info == '/Shibboleth.sso/SAML2/POST'
         env['shibboleth.resolver'] = Shibboleth::Resolver.from_response(
-          env['rack.input'].read, @private_key, @opts)
+          request.params['SAMLResponse'], @private_key, @opts)
       end
 
       @app.call env
