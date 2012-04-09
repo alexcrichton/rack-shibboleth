@@ -24,20 +24,6 @@ module Rack
         end
       end
 
-      # Tests whether the response from the IdP is a valid response. A call to
-      # this function removes the ds:Signature element to perform the
-      # verification.
-      #
-      # @return [Boolean] true if the document is signed/hashed correctly or
-      #         false otherwise.
-      def valid?
-        return false if @doc.nil?
-        signature = @doc.find_first('//ds:Signature', DS)
-        return false if signature.nil?
-
-        valid_hashes?(signature) && valid_signature?(signature)
-      end
-
       # Decodes the response of the IdP and retuns the decrypted XML
       #
       # @param [OpenSSL::PKey::RSA] private_key the corresponding key to the
@@ -46,8 +32,6 @@ module Rack
       # @return [LibXML::XML::Document] The XML document which was
       #         decrypted, or if decryption failed, nil is returned.
       def decode private_key
-        return nil unless valid?
-
         # This is the public key which encrypted the first CipherValue
         cert   = @doc.find_first(
             '//xenc:EncryptedData//ds:X509Certificate', [DS, XENC]).content
@@ -86,7 +70,15 @@ module Rack
         # Section 5.2
         out << cipher.update("\x00" * 16)
         padding = out.bytes.to_a.last
-        LibXML::XML::Document.string(out[0..-(padding + 1)])
+
+        dec = LibXML::XML::Document.string(out[0..-(padding + 1)])
+
+        # Must check that there is a signature listed and that the signature is
+        # valid for the enclosing document.
+        sig = dec.find_first('//ds:Signature', DS)
+        if sig && valid_hashes?(sig) && valid_signature?(sig)
+          dec
+        end
       end
 
       private
