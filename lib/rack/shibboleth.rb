@@ -10,6 +10,7 @@ module Rack
 
     DS   = 'ds:http://www.w3.org/2000/09/xmldsig#'
     XENC = 'xenc:http://www.w3.org/2001/04/xmlenc#'
+    SAML2 = 'saml2:urn:oasis:names:tc:SAML:2.0:assertion'
 
     # Creates a new instance of this middleware to be used.
     # Required options are:

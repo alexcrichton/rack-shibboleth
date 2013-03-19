@@ -33,11 +33,14 @@ module Rack
       #         decrypted, or if decryption failed, nil is returned.
       def decode private_key
         # This is the public key which encrypted the first CipherValue
-        cert   = @doc.find_first(
-            '//xenc:EncryptedData//ds:X509Certificate', [DS, XENC]).content
+        cert = @doc.find_first(
+            '//xenc:EncryptedData//ds:X509Certificate', [DS, XENC])
+        if cert.nil?
+          return @doc.find_first('//saml2:Assertion', [SAML2])
+        end
         c1, c2 = @doc.find('//xenc:CipherValue', XENC).map(&:content)
 
-        cert = OpenSSL::X509::Certificate.new(Base64.decode64(cert))
+        cert = OpenSSL::X509::Certificate.new(Base64.decode64(cert.content))
         return nil unless cert.check_private_key(private_key)
 
         # Generate the key used for the cipher below via the RSA::OAEP algo
